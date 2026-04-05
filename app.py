@@ -17,7 +17,7 @@ def model_prediction(test_image_path):
     img = tf.keras.utils.load_img(test_image_path, target_size=(128, 128))
     x = tf.keras.utils.img_to_array(img)
     x = np.expand_dims(x, axis=0)
-    x = x / 255.0  # CNN uses simple normalization
+    x = x / 255.0
     predictions = model.predict(x)
     return np.argmax(predictions)
 
@@ -141,35 +141,35 @@ elif app_mode == "Disease Identification":
     if test_image is not None:
         st.image(test_image, caption="Uploaded OCT Scan", use_column_width=False, width=400)
 
-    if st.button("🔍 Predict") and test_image is not None:
-        with st.spinner("Analyzing OCT scan... Please wait ⏳"):
-            suffix = os.path.splitext(test_image.name)[-1]
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
-                tmp_file.write(test_image.read())
-                temp_file_path = tmp_file.name
+    if st.button("🔍 Predict"):
+        if test_image is None:
+            st.warning("⚠️ Please upload an OCT image first!")
+        else:
+            with st.spinner("Analyzing OCT scan... Please wait ⏳"):
+                suffix = os.path.splitext(test_image.name)[-1]
+                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
+                    tmp_file.write(test_image.read())
+                    temp_file_path = tmp_file.name
 
-            result_index = model_prediction(temp_file_path)
-            os.unlink(temp_file_path)
+                result_index = model_prediction(temp_file_path)
+                os.unlink(temp_file_path)
 
-        class_name = ['CNV', 'DME', 'DRUSEN', 'NORMAL']
-        result = class_name[result_index]
+            class_name = ['CNV', 'DME', 'DRUSEN', 'NORMAL']
+            result = class_name[result_index]
 
-        color_map = {"CNV": "🔴", "DME": "🟠", "DRUSEN": "🟡", "NORMAL": "🟢"}
-        st.success(f"{color_map[result]} **Prediction: {result}**")
+            color_map = {"CNV": "🔴", "DME": "🟠", "DRUSEN": "🟡", "NORMAL": "🟢"}
+            st.success(f"{color_map[result]} **Prediction: {result}**")
 
-        with st.expander("📋 Learn More & Recommendations", expanded=True):
-            if result_index == 0:
-                st.write("*OCT scan showing CNV with subretinal fluid.*")
-                st.markdown(cnv)
-            elif result_index == 1:
-                st.write("*OCT scan showing DME with retinal thickening and intraretinal fluid.*")
-                st.markdown(dme)
-            elif result_index == 2:
-                st.write("*OCT scan showing drusen deposits in early AMD.*")
-                st.markdown(drusen)
-            elif result_index == 3:
-                st.write("*OCT scan showing a normal retina with preserved foveal contour.*")
-                st.markdown(normal)
-
-    elif st.button("🔍 Predict") and test_image is None:
-        st.warning("⚠️ Please upload an OCT image first!")
+            with st.expander("📋 Learn More & Recommendations", expanded=True):
+                if result_index == 0:
+                    st.write("*OCT scan showing CNV with subretinal fluid.*")
+                    st.markdown(cnv)
+                elif result_index == 1:
+                    st.write("*OCT scan showing DME with retinal thickening and intraretinal fluid.*")
+                    st.markdown(dme)
+                elif result_index == 2:
+                    st.write("*OCT scan showing drusen deposits in early AMD.*")
+                    st.markdown(drusen)
+                elif result_index == 3:
+                    st.write("*OCT scan showing a normal retina with preserved foveal contour.*")
+                    st.markdown(normal)
