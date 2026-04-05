@@ -17,7 +17,6 @@ def model_prediction(test_image_path):
     img = tf.keras.utils.load_img(test_image_path, target_size=(128, 128))
     x = tf.keras.utils.img_to_array(img)
     x = np.expand_dims(x, axis=0)
-    x = x / 255.0
     predictions = model.predict(x)
     return np.argmax(predictions)
 
